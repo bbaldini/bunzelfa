@@ -1,5 +1,5 @@
 // Rete prima, cache come riserva: così gli aggiornamenti (es. config.js) arrivano subito.
-const CACHE = "bunzelfa-v1";
+const CACHE = "bunzelfa-v2";
 const SHELL = ["./", "index.html", "styles.css", "app.js", "config.js", "manifest.webmanifest", "icons/icon-192.png", "icons/apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
