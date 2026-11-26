@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bunzelfa</title>
+<meta name="description" content="Scrivi la letterina a Babbo Natale: la porta la Bunzelfa, la tua elfa personale.">
+<meta name="theme-color" content="#0f1b3d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bunzelfa">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="sky" aria-hidden="true"></div>
+<div id="snow" aria-hidden="true"></div>
+
+<!-- slitta che attraversa il cielo dopo un invio -->
+<svg id="sleigh" viewBox="0 0 260 70" aria-hidden="true">
+  <g transform="translate(0,10) scale(.42)"><use href="#deer"/></g>
+  <g transform="translate(58,6) scale(.42)"><use href="#deer"/></g>
+  <path d="M120 40 C 150 50, 175 52, 200 44" stroke="#e8c26a" stroke-width="1.5" fill="none"/>
+  <g transform="translate(196,22)">
+    <path d="M0 14 h40 c6 0 9-4 9-12 v-2 h6 v4 c0 14-6 22-18 22 h-37 z" fill="#c8243a"/>
+    <path d="M-4 30 h52 c6 0 8-3 9-6" stroke="#e8c26a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <rect x="8" y="2" width="14" height="12" rx="2" fill="#2f8f4e"/>
+    <rect x="20" y="-2" width="12" height="16" rx="2" fill="#f2d16b"/>
+  </g>
+</svg>
+
+<main id="app">
+  <!-- ============ TAB 1: LETTERINA ============ -->
+  <section class="tab active" id="tab-letter" aria-labelledby="t-letter">
+    <header class="scene">
+      <svg class="moon" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="26" fill="#fff6d8"/><circle cx="40" cy="22" r="22" fill="#0f1b3d" opacity=".0"/><circle cx="22" cy="24" r="4" fill="#f1e3b8"/><circle cx="36" cy="38" r="3" fill="#f1e3b8"/></svg>
+
+      <svg class="deer deer-l" viewBox="0 0 130 110" aria-hidden="true"><use href="#deer"/></svg>
+      <svg class="deer deer-r" viewBox="0 0 130 110" aria-hidden="true"><use href="#deer-rednose"/></svg>
+
+      <svg class="elf" viewBox="0 0 160 210" role="img" aria-label="La Bunzelfa, un'elfa con il cappello verde">
+        <use href="#bunzelfa"/>
+      </svg>
+
+      <div class="bubble" id="bubble" aria-live="polite">Ciao! Io sono la <b>Bunzelfa</b>, la tua elfa personale. Chi sei?</div>
+
+      <svg class="hills" viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 30 C 60 5, 120 10, 180 28 S 300 50, 400 18 V60 H0Z" fill="#eaf2ff"/>
+        <path d="M0 44 C 80 26, 160 40, 230 46 S 340 36, 400 40 V60 H0Z" fill="#ffffff"/>
+      </svg>
+    </header>
+
+    <div class="sheet">
+      <h1 class="title">La mia letterina</h1>
+
+      <fieldset class="who">
+        <legend>Chi sei?</legend>
+        <div class="names" id="names"></div>
+      </fieldset>
+
+      <form id="letterForm" class="paper" autocomplete="off" novalidate>
+        <p class="dear">Cara Bunzelfa,<br>quest'anno a Babbo Natale vorrei…</p>
+        <ol id="wishes" class="wishes"></ol>
+        <button type="button" class="ghost" id="addWish">＋ Aggiungi un desiderio</button>
+        <p class="sign" id="sign">Con tanto affetto, …</p>
+        <button type="submit" class="primary" id="sendLetter">Manda la letterina ✉️</button>
+        <p class="hint" id="letterHint" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2: INVIATE ============ -->
+  <section class="tab" id="tab-sent" aria-labelledby="t-sent" hidden>
+    <div class="sheet top">
+      <h1 class="title">Le mie letterine</h1>
+      <p class="sub" id="sentWho">Quello che hai già chiesto alla Bunzelfa da questo telefono.</p>
+      <div id="sentList" class="sent-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3: MESSAGGINO ============ -->
+  <section class="tab" id="tab-msg" aria-labelledby="t-msg" hidden>
+    <div class="sheet top">
+      <div class="mini-elf">
+        <svg viewBox="0 0 160 210" aria-hidden="true"><use href="#bunzelfa"/></svg>
+        <div class="bubble small">Scrivimi quello che vuoi: lo leggo solo io! 🤫</div>
+      </div>
+      <h1 class="title">Un messaggino alla Bunzelfa</h1>
+      <form id="msgForm" class="paper" novalidate>
+        <label class="lbl" for="msgText">Il tuo messaggino</label>
+        <textarea id="msgText" rows="6" maxlength="1500" placeholder="Cara Bunzelfa…"></textarea>
+        <button type="submit" class="primary" id="sendMsg">Manda il messaggino 💌</button>
+        <p class="hint" id="msgHint" role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" role="tablist">
+  <button role="tab" id="t-letter" aria-controls="tab-letter" aria-selected="true" data-tab="tab-letter"><span>🎄</span>Letterina</button>
+  <button role="tab" id="t-sent" aria-controls="tab-sent" aria-selected="false" data-tab="tab-sent"><span>🎁</span>Inviate</button>
+  <button role="tab" id="t-msg" aria-controls="tab-msg" aria-selected="false" data-tab="tab-msg"><span>💌</span>Messaggino</button>
+</nav>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ============ DISEGNI ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="deer-body">
+      <!-- corna -->
+      <g stroke="#6b4423" stroke-width="3.2" stroke-linecap="round" fill="none">
+        <path d="M95 20 C 92 8, 86 2, 80 -4"/><path d="M90 9 C 84 8, 80 10, 77 13"/><path d="M84 1 C 80 -3, 80 -8, 82 -12"/>
+        <path d="M103 19 C 106 7, 112 2, 118 -3"/><path d="M108 8 C 114 6, 118 8, 121 11"/><path d="M113 1 C 116 -4, 116 -9, 114 -12"/>
+      </g>
+      <!-- zampe -->
+      <g fill="#7a4a24"><rect x="36" y="66" width="7" height="30" rx="3"/><rect x="50" y="68" width="7" height="28" rx="3"/><rect x="70" y="68" width="7" height="28" rx="3"/><rect x="83" y="66" width="7" height="30" rx="3"/></g>
+      <g fill="#3a2414"><rect x="35" y="92" width="9" height="6" rx="2"/><rect x="49" y="92" width="9" height="6" rx="2"/><rect x="69" y="92" width="9" height="6" rx="2"/><rect x="82" y="92" width="9" height="6" rx="2"/></g>
+      <!-- corpo -->
+      <ellipse cx="62" cy="58" rx="36" ry="19" fill="#9a6232"/>
+      <ellipse cx="62" cy="66" rx="24" ry="9" fill="#c9965f"/>
+      <ellipse cx="27" cy="50" rx="6" ry="5" fill="#fff"/>
+      <!-- collo e testa -->
+      <path d="M84 52 C 90 42, 92 34, 96 26 L 106 30 C 102 40, 98 50, 94 58 Z" fill="#9a6232"/>
+      <ellipse cx="100" cy="26" rx="13" ry="10" fill="#9a6232"/>
+      <ellipse cx="111" cy="30" rx="8" ry="6" fill="#c9965f"/>
+      <ellipse cx="90" cy="19" rx="5" ry="3" fill="#7a4a24" transform="rotate(-30 90 19)"/>
+      <circle cx="101" cy="23" r="2.2" fill="#1c1209"/><circle cx="101.7" cy="22.3" r=".7" fill="#fff"/>
+      <path d="M44 44 h34" stroke="#c8243a" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="61" cy="49" r="3.4" fill="#f2d16b"/>
+    </g>
+    <symbol id="deer" viewBox="0 -16 130 116" overflow="visible"><use href="#deer-body"/><circle cx="117" cy="29" r="3.6" fill="#3a2414"/></symbol>
+    <symbol id="deer-rednose" viewBox="0 -16 130 116" overflow="visible"><use href="#deer-body"/><circle cx="117" cy="29" r="4.4" fill="#ff3b4e"/><circle cx="118" cy="27.6" r="1.3" fill="#fff" opacity=".8"/></symbol>
+
+    <symbol id="bunzelfa" viewBox="0 0 160 210" overflow="visible">
+      <!-- trecce -->
+      <g fill="#d9772b"><path d="M38 92 C 26 110, 30 136, 24 156 C 34 150, 40 130, 46 108 Z"/><path d="M122 92 C 134 110, 130 136, 136 156 C 126 150, 120 130, 114 108 Z"/></g>
+      <circle cx="25" cy="157" r="5" fill="#c8243a"/><circle cx="135" cy="157" r="5" fill="#c8243a"/>
+      <!-- corpo -->
+      <path d="M52 150 C 50 172, 42 192, 36 206 H124 C 118 192, 110 172, 108 150 Z" fill="#2f8f4e"/>
+      <path d="M44 194 H116 l4 12 H40 Z" fill="#c8243a"/>
+      <path d="M56 148 L80 166 L104 148 Z" fill="#c8243a"/>
+      <circle cx="80" cy="176" r="3" fill="#f2d16b"/><circle cx="80" cy="188" r="3" fill="#f2d16b"/>
+      <!-- braccio con letterina -->
+      <path d="M106 160 C 122 158, 132 146, 138 132" stroke="#2f8f4e" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <circle cx="139" cy="129" r="7" fill="#f6d2b8"/>
+      <g transform="rotate(-14 142 118)"><rect x="128" y="106" width="30" height="21" rx="2" fill="#fffaf0" stroke="#d6c7a6"/><path d="M128 107 L143 118 L158 107" stroke="#d6c7a6" fill="none"/><circle cx="143" cy="118" r="3" fill="#c8243a"/></g>
+      <path d="M54 160 C 42 166, 36 176, 36 186" stroke="#2f8f4e" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <circle cx="36" cy="189" r="7" fill="#f6d2b8"/>
+      <!-- orecchie a punta -->
+      <path d="M44 96 L18 80 L46 110 Z" fill="#f6d2b8"/><path d="M116 96 L142 80 L114 110 Z" fill="#f6d2b8"/>
+      <path d="M42 99 L26 88 L44 106 Z" fill="#eab399"/><path d="M118 99 L134 88 L116 106 Z" fill="#eab399"/>
+      <!-- viso -->
+      <circle cx="80" cy="104" r="38" fill="#f6d2b8"/>
+      <path d="M44 92 C 52 78, 70 74, 80 82 C 90 74, 108 78, 116 92 C 108 84, 96 84, 80 90 C 64 84, 52 84, 44 92 Z" fill="#d9772b"/>
+      <ellipse cx="66" cy="104" rx="5" ry="6.5" fill="#2a1a12"/><ellipse cx="94" cy="104" rx="5" ry="6.5" fill="#2a1a12"/>
+      <circle cx="67.8" cy="101.5" r="1.8" fill="#fff"/><circle cx="95.8" cy="101.5" r="1.8" fill="#fff"/>
+      <ellipse cx="58" cy="118" rx="7" ry="4.5" fill="#f49aa0" opacity=".7"/><ellipse cx="102" cy="118" rx="7" ry="4.5" fill="#f49aa0" opacity=".7"/>
+      <g fill="#c98a5f"><circle cx="72" cy="114" r="1"/><circle cx="76" cy="116" r="1"/><circle cx="84" cy="116" r="1"/><circle cx="88" cy="114" r="1"/></g>
+      <path d="M70 122 C 75 130, 85 130, 90 122" stroke="#9c3b3b" stroke-width="3" fill="#fff" stroke-linecap="round"/>
+      <!-- cappello -->
+      <path d="M40 84 C 46 46, 70 26, 104 18 C 120 14, 136 22, 140 34 C 126 30, 112 36, 108 50 C 116 62, 120 72, 120 84 Z" fill="#2f8f4e"/>
+      <path d="M62 50 C 74 40, 88 32, 104 26" stroke="#3fae62" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+      <rect x="34" y="78" width="92" height="14" rx="7" fill="#c8243a"/>
+      <g fill="#f2d16b"><circle cx="46" cy="85" r="2"/><circle cx="62" cy="85" r="2"/><circle cx="80" cy="85" r="2"/><circle cx="98" cy="85" r="2"/><circle cx="114" cy="85" r="2"/></g>
+      <circle cx="142" cy="36" r="9" fill="#f2d16b"/><circle cx="139" cy="33" r="3" fill="#fff6c9"/>
+      <path d="M137 44 h10" stroke="#b8902e" stroke-width="2"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Letterine Bunzelfa</title>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6efe2;--card:#fffaf0;--line:#e6d7bb;--ink:#3a2a20;--muted:#8a7766;--red:#c8243a;--green:#2f8f4e;--night:#0f1b3d;--link:#2b5aa8;--new:#fff3d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121726;--card:#1c2236;--line:#2e3654;--ink:#eee6d8;--muted:#9aa3bf;--link:#8db4ff;--new:#3a3220}}
+:root[data-theme="dark"]{--bg:#121726;--card:#1c2236;--line:#2e3654;--ink:#eee6d8;--muted:#9aa3bf;--link:#8db4ff;--new:#3a3220}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif}
+header{background:linear-gradient(120deg,var(--night),#3b3f7a);color:#fff;padding:18px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-family:"Mountains of Christmas",cursive;font-size:34px;margin:0;flex:1}
+header .meta{font-size:13px;opacity:.85}
+button{font:inherit;cursor:pointer}
+.btn{border:0;border-radius:12px;padding:9px 14px;font-weight:800;background:#fff;color:var(--night)}
+.btn.sec{background:rgba(255,255,255,.14);color:#fff}
+main{padding:20px 24px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;align-items:start}
+.person{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.person h2{margin:0;padding:14px 16px;font-size:22px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.person h2 .count{margin-left:auto;font-size:13px;color:var(--muted);font-weight:600}
+.badge{background:var(--red);color:#fff;border-radius:99px;font-size:12px;padding:2px 8px}
+.sect{padding:10px 16px 14px}
+.sect h3{margin:6px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+ul{list-style:none;margin:0;padding:0}
+li.w{display:grid;grid-template-columns:22px 1fr;gap:4px 10px;padding:8px 6px;border-radius:10px}
+li.w.new{background:var(--new)}
+li.w input{margin:3px 0 0;width:18px;height:18px;accent-color:var(--green)}
+li.w.done .t{text-decoration:line-through;color:var(--muted)}
+.t{word-break:break-word}
+.d{grid-column:2;font-size:12px;color:var(--muted)}
+.d a{color:var(--link);font-weight:700}
+.msg{background:var(--bg);border-radius:12px;padding:10px 12px;margin-bottom:8px;white-space:pre-wrap;word-break:break-word}
+.msg.new{background:var(--new)}
+.msg small{display:block;color:var(--muted);margin-top:4px}
+.empty{color:var(--muted);font-style:italic;padding:4px 6px}
+.setup{max-width:640px;margin:30px auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+.setup input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;margin:6px 0 12px}
+.err{color:var(--red);font-weight:700}
+@media (max-width:600px){header,main{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧝‍♀️ Letterine alla Bunzelfa</h1>
+  <span class="meta" id="meta"></span>
+  <button class="btn sec" id="seen" title="Togli l'evidenziazione dei nuovi">Segna tutto come letto</button>
+  <button class="btn" id="reload">↻ Aggiorna</button>
+</header>
+<main id="main"></main>
+
+<script>
+// Compilati dall'installazione: URL della Web App (/exec) e ADMIN_KEY di Code.gs
+const ENDPOINT_DEFAULT = "__ENDPOINT__";
+const ADMIN = "__ADMIN__";
+const EMOJI = {Lorenzo:"🦌", Benny:"⭐", Ros:"🎀", Lola:"⛄"};
+
+const ls = {get(k,d){try{const v=localStorage.getItem("bzd."+k);return v==null?d:JSON.parse(v)}catch{return d}}, set(k,v){try{localStorage.setItem("bzd."+k,JSON.stringify(v))}catch{}}};
+const endpoint = () => (/^https:\/\//.test(ENDPOINT_DEFAULT) ? ENDPOINT_DEFAULT : ls.get("endpoint",""));
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const fmt = iso => { try { return new Date(iso).toLocaleString("it-IT",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); } catch { return iso; } };
+const main = document.getElementById("main");
+
+function load() {
+  const url = endpoint();
+  if (!url) return showSetup();
+  document.getElementById("meta").textContent = "Aggiorno…";
+  const cb = "bz_" + Date.now();
+  const s = document.createElement("script");
+  const timer = setTimeout(() => fail("Il Google Sheet non risponde. Controlla la connessione o l'URL."), 15000);
+  window[cb] = data => { clearTimeout(timer); delete window[cb]; s.remove(); data && data.ok ? render(data) : fail(data && data.error === "chiave" ? "Chiave admin non valida: controlla ADMIN_KEY in Code.gs." : "Risposta inattesa dal Google Sheet."); };
+  s.onerror = () => { clearTimeout(timer); fail("Non riesco a raggiungere il Google Sheet."); };
+  s.src = url + (url.includes("?") ? "&" : "?") + "admin=" + encodeURIComponent(ADMIN) + "&callback=" + cb;
+  document.body.appendChild(s);
+}
+function fail(msg) { document.getElementById("meta").textContent = ""; const p = el("p","err",msg); main.replaceChildren(p); }
+
+function showSetup() {
+  const box = el("div","setup");
+  box.append(el("h2",null,"Collega il Google Sheet"), el("p",null,"Incolla l'URL della Web App di Apps Script (finisce con /exec)."));
+  const inp = el("input"); inp.placeholder = "https://script.google.com/macros/s/…/exec";
+  const b = el("button","btn","Salva"); b.style.background = "var(--red)"; b.style.color = "#fff";
+  b.onclick = () => { const v = inp.value.trim(); if (/^https:\/\/script\.google\.com\/.+\/exec$/.test(v)) { ls.set("endpoint", v); load(); } else inp.style.borderColor = "var(--red)"; };
+  box.append(inp, b); main.replaceChildren(box);
+}
+
+function render(data) {
+  const done = ls.get("done", {}), seenAt = ls.get("seenAt", "");
+  const names = [...data.order, ...Object.keys(data.people).filter(n => !data.order.includes(n))];
+  const grid = el("div","grid");
+  for (const name of names) {
+    const rows = (data.people[name] || []).slice().sort((a,b) => b.date.localeCompare(a.date));
+    const wishes = rows.filter(r => r.type === "wish"), msgs = rows.filter(r => r.type === "message");
+    const fresh = rows.filter(r => r.date > seenAt).length;
+    const card = el("section","person");
+    const h = el("h2"); h.append(el("span",null,EMOJI[name] || "🎁"), el("span",null,name));
+    if (fresh) h.append(el("span","badge",fresh + " nuov" + (fresh === 1 ? "o" : "i")));
+    h.append(el("span","count", wishes.length + " desideri"));
+    card.append(h);
+
+    const s1 = el("div","sect"); s1.append(el("h3",null,"Desideri"));
+    const ul = el("ul");
+    if (!wishes.length) ul.append(el("li","empty","Nessun desiderio ancora"));
+    for (const w of wishes) {
+      const key = w.id + "|" + w.text;
+      const li = el("li","w" + (done[key] ? " done" : "") + (w.date > seenAt ? " new" : ""));
+      const cb = el("input"); cb.type = "checkbox"; cb.checked = !!done[key]; cb.title = "Preso!";
+      cb.onchange = () => { const d = ls.get("done",{}); cb.checked ? d[key] = 1 : delete d[key]; ls.set("done", d); li.classList.toggle("done", cb.checked); };
+      const d = el("div","d", fmt(w.date));
+      if (/^https:\/\//i.test(w.link)) { d.append(" · "); const a = el("a",null,"apri link ↗"); a.href = w.link; a.target = "_blank"; a.rel = "noopener"; d.append(a); }
+      else if (w.link) d.append(" · " + w.link);
+      li.append(cb, el("span","t", w.text || "(solo link)"), d);
+      ul.append(li);
+    }
+    s1.append(ul); card.append(s1);
+
+    const s2 = el("div","sect"); s2.append(el("h3",null,"Messaggini"));
+    if (!msgs.length) s2.append(el("p","empty","Nessun messaggino"));
+    for (const m of msgs) { const p = el("div","msg" + (m.date > seenAt ? " new" : ""), m.text); p.append(el("small",null,fmt(m.date))); s2.append(p); }
+    card.append(s2);
+    grid.append(card);
+  }
+  main.replaceChildren(grid);
+  document.getElementById("meta").textContent = "Aggiornato alle " + new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
+  render.last = data;
+}
+document.getElementById("reload").onclick = load;
+document.getElementById("seen").onclick = () => { ls.set("seenAt", new Date().toISOString()); if (render.last) render(render.last); };
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
